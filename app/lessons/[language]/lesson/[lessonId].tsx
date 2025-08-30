@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AudioButton from '@/components/AudioButton';
+import { DataService } from '@/services/dataService';
 
 const lessonContent = {
   japanese: {
@@ -110,15 +111,23 @@ export default function LessonScreen() {
     );
   }
 
-  const completeLesson = () => {
-    Alert.alert(
-      'Lesson Complete!',
-      'Great job! You\'ve finished this lesson.',
-      [
-        { text: 'Next Lesson', onPress: () => router.back() },
-        { text: 'Back to Lessons', onPress: () => router.push(`/lessons/${language}`) },
-      ]
-    );
+  const completeLesson = async () => {
+    try {
+      // Mark lesson as complete
+      await DataService.markLessonComplete(language as string, parseInt(lessonId as string), 10); // 10 minutes study time
+
+      Alert.alert(
+        'Lesson Complete!',
+        'Great job! You\'ve finished this lesson.',
+        [
+          { text: 'Next Lesson', onPress: () => router.back() },
+          { text: 'Back to Lessons', onPress: () => router.push(`/lessons/${language}`) },
+        ]
+      );
+    } catch (error) {
+      console.error('Error marking lesson complete:', error);
+      Alert.alert('Error', 'Failed to save progress. Please try again.');
+    }
   };
 
   return (

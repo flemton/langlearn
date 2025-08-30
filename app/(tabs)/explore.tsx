@@ -1,23 +1,54 @@
 import { StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useState, useEffect } from 'react';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { DataService, UserProgress } from '@/services/dataService';
+
+interface ProgressData extends UserProgress {
+  totalLessons: number;
+}
 
 export default function ProgressScreen() {
   const router = useRouter();
+  const [progressData, setProgressData] = useState<Record<string, ProgressData>>({});
+  const [totalLessons, setTotalLessons] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock progress data - in a real app, this would come from AsyncStorage or a backend
-  const progressData = {
-    japanese: { completed: 2, total: 5, streak: 3 },
-    spanish: { completed: 1, total: 5, streak: 1 },
-    arabic: { completed: 0, total: 5, streak: 0 },
+  useEffect(() => {
+    loadProgressData();
+  }, []);
+
+  const loadProgressData = async () => {
+    try {
+      const languages = ['japanese', 'spanish', 'arabic'];
+      const progress: Record<string, ProgressData> = {};
+      let totalLessonsCount = 0;
+
+      for (const language of languages) {
+        const userProgress = await DataService.getUserProgress(language);
+        const lessons = await DataService.getLessons(language);
+
+        progress[language] = {
+          ...userProgress,
+          totalLessons: lessons.length,
+        };
+        totalLessonsCount += lessons.length;
+      }
+
+      setProgressData(progress);
+      setTotalLessons(totalLessonsCount);
+    } catch (error) {
+      console.error('Error loading progress data:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const totalCompleted = Object.values(progressData).reduce((sum, lang) => sum + lang.completed, 0);
-  const totalLessons = Object.values(progressData).reduce((sum, lang) => sum + lang.total, 0);
-  const overallProgress = Math.round((totalCompleted / totalLessons) * 100);
+  const totalCompleted = Object.values(progressData).reduce((sum, lang) => sum + lang.totalLessonsCompleted, 0);
+  const overallProgress = totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0;
 
   const navigateToLessons = (language: string) => {
     router.push(`/lessons/${language}`);
@@ -74,7 +105,7 @@ export default function ProgressScreen() {
                   {language.charAt(0).toUpperCase() + language.slice(1)}
                 </ThemedText>
                 <ThemedText style={styles.progressText}>
-                  {data.completed}/{data.total} lessons
+                  {data.totalLessonsCompleted}/{data.totalLessons} lessons
                 </ThemedText>
               </ThemedView>
 
@@ -82,14 +113,14 @@ export default function ProgressScreen() {
                 <ThemedView
                   style={[
                     styles.progressFill,
-                    { width: `${(data.completed / data.total) * 100}%` }
+                    { width: `${(data.totalLessonsCompleted / data.totalLessons) * 100}%` }
                   ]}
                 />
               </ThemedView>
 
-              {data.streak > 0 && (
+              {data.currentStreak > 0 && (
                 <ThemedText style={styles.streakText}>
-                  🔥 {data.streak} day streak
+                  🔥 {data.currentStreak} day streak
                 </ThemedText>
               )}
             </TouchableOpacity>

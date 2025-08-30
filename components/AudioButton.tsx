@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Audio } from 'expo-av';
 import { IconSymbol } from './ui/IconSymbol';
+import { AudioService } from '../services/audioService';
 
 interface AudioButtonProps {
   audioUri?: string;
@@ -11,60 +11,39 @@ interface AudioButtonProps {
 }
 
 export default function AudioButton({ audioUri, text, language, size = 24 }: AudioButtonProps) {
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     return () => {
-      if (sound) {
-        sound.unloadAsync();
-      }
+      // Cleanup TTS when component unmounts
+      AudioService.stop();
     };
-  }, [sound]);
+  }, []);
 
   const playAudio = async () => {
     try {
       setIsLoading(true);
-
-      if (sound) {
-        await sound.unloadAsync();
-      }
-
-      // For demo purposes, we'll use a simple beep sound
-      // In a real app, you'd load actual pronunciation audio files
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav' },
-        { shouldPlay: true }
-      );
-
-      setSound(newSound);
       setIsPlaying(true);
 
-      // Listen for playback status updates
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded) {
-          if (status.didJustFinish) {
-            setIsPlaying(false);
-            setIsLoading(false);
-          }
-        }
-      });
+      // Use TTS to speak the text
+      if (text) {
+        await AudioService.speak(text, language);
+      }
 
-      await newSound.playAsync();
+      setIsPlaying(false);
+      setIsLoading(false);
     } catch (error) {
       console.error('Error playing audio:', error);
-      setIsLoading(false);
       setIsPlaying(false);
+      setIsLoading(false);
     }
   };
 
   const stopAudio = async () => {
-    if (sound) {
-      await sound.stopAsync();
-      setIsPlaying(false);
-      setIsLoading(false);
-    }
+    await AudioService.stop();
+    setIsPlaying(false);
+    setIsLoading(false);
   };
 
   const handlePress = () => {
