@@ -14,6 +14,9 @@ export default function AudioButton({ audioUri, text, language, size = 24 }: Aud
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Don't show audio button for English or unsupported languages
+  const isAudioAvailable = language && language !== 'english' && ['japanese', 'spanish', 'arabic'].includes(language);
+
   useEffect(() => {
     return () => {
       // Cleanup TTS when component unmounts
@@ -53,6 +56,11 @@ export default function AudioButton({ audioUri, text, language, size = 24 }: Aud
       playAudio();
     }
   };
+
+  // Don't render audio button for English or unsupported languages
+  if (!isAudioAvailable) {
+    return null;
+  }
 
   return (
     <TouchableOpacity

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import AudioButton from '@/components/AudioButton';
 
 const lessonData = {
   japanese: {
@@ -79,9 +80,16 @@ export default function LanguageLessonsScreen() {
             style={styles.lessonCard}
             onPress={() => startLesson(lesson.id)}
           >
-            <ThemedText type="subtitle" style={styles.lessonTitle}>
-              Lesson {lesson.id}: {lesson.title}
-            </ThemedText>
+            <ThemedView style={styles.lessonTitleWithAudio}>
+              <ThemedText type="subtitle" style={styles.lessonTitle}>
+                Lesson {lesson.id}: {lesson.title}
+              </ThemedText>
+              <AudioButton
+                text={lesson.title}
+                language={language as string}
+                size={20}
+              />
+            </ThemedView>
             <ThemedText style={styles.lessonDescription}>
               {lesson.description}
             </ThemedText>
@@ -130,8 +138,15 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  lessonTitleWithAudio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
   lessonTitle: {
     marginBottom: 8,
+    flex: 1,
   },
   lessonDescription: {
     opacity: 0.7,

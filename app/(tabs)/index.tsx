@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
-import { StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import AudioButton from '@/components/AudioButton';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -23,32 +24,53 @@ export default function HomeScreen() {
             Start your journey from zero to hero!
           </ThemedText>
 
-          <TouchableOpacity
-            style={styles.languageButton}
-            onPress={() => selectLanguage('japanese')}
-          >
-            <ThemedText type="subtitle" style={styles.buttonText}>
-              🇯🇵 Japanese
-            </ThemedText>
-          </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.languageButton}
+        onPress={() => selectLanguage('japanese')}
+      >
+        <View style={styles.buttonContent}>
+          <ThemedText type="subtitle" style={styles.buttonText}>
+            🇯🇵 Japanese
+          </ThemedText>
+          <AudioButton
+            text="Japanese"
+            language="japanese"
+            size={20}
+          />
+        </View>
+      </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.languageButton}
-            onPress={() => selectLanguage('spanish')}
-          >
-            <ThemedText type="subtitle" style={styles.buttonText}>
-              🇪🇸 Spanish
-            </ThemedText>
-          </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.languageButton}
+        onPress={() => selectLanguage('spanish')}
+      >
+        <View style={styles.buttonContent}>
+          <ThemedText type="subtitle" style={styles.buttonText}>
+            🇪🇸 Spanish
+          </ThemedText>
+          <AudioButton
+            text="Spanish"
+            language="spanish"
+            size={20}
+          />
+        </View>
+      </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.languageButton}
-            onPress={() => selectLanguage('arabic')}
-          >
-            <ThemedText type="subtitle" style={styles.buttonText}>
-              🇸🇦 Arabic
-            </ThemedText>
-          </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.languageButton}
+        onPress={() => selectLanguage('arabic')}
+      >
+        <View style={styles.buttonContent}>
+          <ThemedText type="subtitle" style={styles.buttonText}>
+            🇸🇦 Arabic
+          </ThemedText>
+          <AudioButton
+            text="Arabic"
+            language="arabic"
+            size={20}
+          />
+        </View>
+      </TouchableOpacity>
         </ThemedView>
       </ScrollView>
     </SafeAreaView>
@@ -87,8 +109,15 @@ const styles = StyleSheet.create({
     width: '80%',
     alignItems: 'center',
   },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   buttonText: {
     color: 'white',
     fontSize: 18,
+    flex: 1,
   },
 });
