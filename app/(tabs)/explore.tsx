@@ -1,4 +1,5 @@
 import { StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -16,101 +17,109 @@ export default function ProgressScreen() {
   const overallProgress = Math.round((totalCompleted / totalLessons) * 100);
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          Your Progress
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Track your language learning journey
-        </ThemedText>
-      </ThemedView>
-
-      <ThemedView style={styles.statsContainer}>
-        <ThemedView style={styles.statCard}>
-          <ThemedText type="subtitle" style={styles.statNumber}>
-            {totalCompleted}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <ThemedView style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            Your Progress
           </ThemedText>
-          <ThemedText style={styles.statLabel}>Lessons Completed</ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Track your language learning journey
+          </ThemedText>
         </ThemedView>
 
-        <ThemedView style={styles.statCard}>
-          <ThemedText type="subtitle" style={styles.statNumber}>
-            {overallProgress}%
-          </ThemedText>
-          <ThemedText style={styles.statLabel}>Overall Progress</ThemedText>
-        </ThemedView>
-
-        <ThemedView style={styles.statCard}>
-          <ThemedText type="subtitle" style={styles.statNumber}>
-            🔥
-          </ThemedText>
-          <ThemedText style={styles.statLabel}>Current Streak</ThemedText>
-        </ThemedView>
-      </ThemedView>
-
-      <ThemedView style={styles.languagesContainer}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>
-          Language Progress
-        </ThemedText>
-
-        {Object.entries(progressData).map(([language, data]) => (
-          <ThemedView key={language} style={styles.languageCard}>
-            <ThemedView style={styles.languageHeader}>
-              <ThemedText type="subtitle" style={styles.languageName}>
-                {language.charAt(0).toUpperCase() + language.slice(1)}
-              </ThemedText>
-              <ThemedText style={styles.progressText}>
-                {data.completed}/{data.total} lessons
-              </ThemedText>
-            </ThemedView>
-
-            <ThemedView style={styles.progressBar}>
-              <ThemedView
-                style={[
-                  styles.progressFill,
-                  { width: `${(data.completed / data.total) * 100}%` }
-                ]}
-              />
-            </ThemedView>
-
-            {data.streak > 0 && (
-              <ThemedText style={styles.streakText}>
-                🔥 {data.streak} day streak
-              </ThemedText>
-            )}
+        <ThemedView style={styles.statsContainer}>
+          <ThemedView style={styles.statCard}>
+            <ThemedText type="subtitle" style={styles.statNumber}>
+              {totalCompleted}
+            </ThemedText>
+            <ThemedText style={styles.statLabel}>Lessons Completed</ThemedText>
           </ThemedView>
-        ))}
-      </ThemedView>
 
-      <ThemedView style={styles.achievementsContainer}>
-        <ThemedText type="subtitle" style={styles.sectionTitle}>
-          Recent Achievements
-        </ThemedText>
+          <ThemedView style={styles.statCard}>
+            <ThemedText type="subtitle" style={styles.statNumber}>
+              {overallProgress}%
+            </ThemedText>
+            <ThemedText style={styles.statLabel}>Overall Progress</ThemedText>
+          </ThemedView>
 
-        <ThemedView style={styles.achievementCard}>
-          <ThemedText type="subtitle" style={styles.achievementTitle}>
-            🏆 First Steps
-          </ThemedText>
-          <ThemedText style={styles.achievementDescription}>
-            Completed your first lesson!
-          </ThemedText>
+          <ThemedView style={styles.statCard}>
+            <ThemedText type="subtitle" style={styles.statNumber}>
+              🔥
+            </ThemedText>
+            <ThemedText style={styles.statLabel}>Current Streak</ThemedText>
+          </ThemedView>
         </ThemedView>
 
-        <ThemedView style={styles.achievementCard}>
-          <ThemedText type="subtitle" style={styles.achievementTitle}>
-            📚 Language Explorer
+        <ThemedView style={styles.languagesContainer}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Language Progress
           </ThemedText>
-          <ThemedText style={styles.achievementDescription}>
-            Started learning your second language!
-          </ThemedText>
+
+          {Object.entries(progressData).map(([language, data]) => (
+            <ThemedView key={language} style={styles.languageCard}>
+              <ThemedView style={styles.languageHeader}>
+                <ThemedText type="subtitle" style={styles.languageName}>
+                  {language.charAt(0).toUpperCase() + language.slice(1)}
+                </ThemedText>
+                <ThemedText style={styles.progressText}>
+                  {data.completed}/{data.total} lessons
+                </ThemedText>
+              </ThemedView>
+
+              <ThemedView style={styles.progressBar}>
+                <ThemedView
+                  style={[
+                    styles.progressFill,
+                    { width: `${(data.completed / data.total) * 100}%` }
+                  ]}
+                />
+              </ThemedView>
+
+              {data.streak > 0 && (
+                <ThemedText style={styles.streakText}>
+                  🔥 {data.streak} day streak
+                </ThemedText>
+              )}
+            </ThemedView>
+          ))}
         </ThemedView>
-      </ThemedView>
-    </ScrollView>
+
+        <ThemedView style={styles.achievementsContainer}>
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Recent Achievements
+          </ThemedText>
+
+          <ThemedView style={styles.achievementCard}>
+            <ThemedText type="subtitle" style={styles.achievementTitle}>
+              🏆 First Steps
+            </ThemedText>
+            <ThemedText style={styles.achievementDescription}>
+              Completed your first lesson!
+            </ThemedText>
+          </ThemedView>
+
+          <ThemedView style={styles.achievementCard}>
+            <ThemedText type="subtitle" style={styles.achievementTitle}>
+              📚 Language Explorer
+            </ThemedText>
+            <ThemedText style={styles.achievementDescription}>
+              Started learning your second language!
+            </ThemedText>
+          </ThemedView>
+        </ThemedView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',

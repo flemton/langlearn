@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -100,9 +101,11 @@ export default function LessonScreen() {
 
   if (!content) {
     return (
-      <ThemedView style={styles.container}>
-        <ThemedText type="title">Lesson not found</ThemedText>
-      </ThemedView>
+      <SafeAreaView style={styles.safeArea}>
+        <ThemedView style={styles.errorContainer}>
+          <ThemedText type="title">Lesson not found</ThemedText>
+        </ThemedView>
+      </SafeAreaView>
     );
   }
 
@@ -118,54 +121,67 @@ export default function LessonScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          {content.title}
-        </ThemedText>
-      </ThemedView>
-
-      {content.content.map((item: any, index: number) => (
-        <ThemedView key={index} style={styles.contentItem}>
-          {item.type === 'text' ? (
-            <ThemedText style={styles.textContent}>{item.text}</ThemedText>
-          ) : (
-            <ThemedView style={styles.vocabularyItem}>
-              <ThemedText type="subtitle" style={styles.word}>
-                {item.word}
-              </ThemedText>
-              {item.romaji && (
-                <ThemedText style={styles.romaji}>{item.romaji}</ThemedText>
-              )}
-              {item.pronunciation && (
-                <ThemedText style={styles.pronunciation}>
-                  Pronunciation: {item.pronunciation}
-                </ThemedText>
-              )}
-              {item.example && (
-                <ThemedText style={styles.example}>Example: {item.example}</ThemedText>
-              )}
-              <ThemedText style={styles.meaning}>
-                {item.meaning}
-              </ThemedText>
-            </ThemedView>
-          )}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <ThemedView style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            {content.title}
+          </ThemedText>
         </ThemedView>
-      ))}
 
-      <TouchableOpacity style={styles.completeButton} onPress={completeLesson}>
-        <ThemedText type="subtitle" style={styles.buttonText}>
-          Complete Lesson
-        </ThemedText>
-      </TouchableOpacity>
-    </ScrollView>
+        {content.content.map((item: any, index: number) => (
+          <ThemedView key={index} style={styles.contentItem}>
+            {item.type === 'text' ? (
+              <ThemedText style={styles.textContent}>{item.text}</ThemedText>
+            ) : (
+              <ThemedView style={styles.vocabularyItem}>
+                <ThemedText type="subtitle" style={styles.word}>
+                  {item.word}
+                </ThemedText>
+                {item.romaji && (
+                  <ThemedText style={styles.romaji}>{item.romaji}</ThemedText>
+                )}
+                {item.pronunciation && (
+                  <ThemedText style={styles.pronunciation}>
+                    Pronunciation: {item.pronunciation}
+                  </ThemedText>
+                )}
+                {item.example && (
+                  <ThemedText style={styles.example}>Example: {item.example}</ThemedText>
+                )}
+                <ThemedText style={styles.meaning}>
+                  {item.meaning}
+                </ThemedText>
+              </ThemedView>
+            )}
+          </ThemedView>
+        ))}
+
+        <TouchableOpacity style={styles.completeButton} onPress={completeLesson}>
+          <ThemedText type="subtitle" style={styles.buttonText}>
+            Complete Lesson
+          </ThemedText>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     padding: 20,

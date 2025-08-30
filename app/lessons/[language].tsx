@@ -1,5 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -48,9 +49,11 @@ export default function LanguageLessonsScreen() {
 
   if (!langData) {
     return (
-      <ThemedView style={styles.container}>
-        <ThemedText type="title">Language not found</ThemedText>
-      </ThemedView>
+      <SafeAreaView style={styles.safeArea}>
+        <ThemedView style={styles.errorContainer}>
+          <ThemedText type="title">Language not found</ThemedText>
+        </ThemedView>
+      </SafeAreaView>
     );
   }
 
@@ -59,38 +62,51 @@ export default function LanguageLessonsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title" style={styles.title}>
-          {langData.flag} {langData.name} Lessons
-        </ThemedText>
-        <ThemedText style={styles.subtitle}>
-          Progress from beginner to advanced
-        </ThemedText>
-      </ThemedView>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <ThemedView style={styles.header}>
+          <ThemedText type="title" style={styles.title}>
+            {langData.flag} {langData.name} Lessons
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>
+            Progress from beginner to advanced
+          </ThemedText>
+        </ThemedView>
 
-      {langData.lessons.map((lesson) => (
-        <TouchableOpacity
-          key={lesson.id}
-          style={styles.lessonCard}
-          onPress={() => startLesson(lesson.id)}
-        >
-          <ThemedText type="subtitle" style={styles.lessonTitle}>
-            Lesson {lesson.id}: {lesson.title}
-          </ThemedText>
-          <ThemedText style={styles.lessonDescription}>
-            {lesson.description}
-          </ThemedText>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
+        {langData.lessons.map((lesson) => (
+          <TouchableOpacity
+            key={lesson.id}
+            style={styles.lessonCard}
+            onPress={() => startLesson(lesson.id)}
+          >
+            <ThemedText type="subtitle" style={styles.lessonTitle}>
+              Lesson {lesson.id}: {lesson.title}
+            </ThemedText>
+            <ThemedText style={styles.lessonDescription}>
+              {lesson.description}
+            </ThemedText>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     padding: 20,
