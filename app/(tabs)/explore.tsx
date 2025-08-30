@@ -1,110 +1,221 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, ScrollView } from 'react-native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 
-export default function TabTwoScreen() {
+export default function ProgressScreen() {
+  // Mock progress data - in a real app, this would come from AsyncStorage or a backend
+  const progressData = {
+    japanese: { completed: 2, total: 5, streak: 3 },
+    spanish: { completed: 1, total: 5, streak: 1 },
+    arabic: { completed: 0, total: 5, streak: 0 },
+  };
+
+  const totalCompleted = Object.values(progressData).reduce((sum, lang) => sum + lang.completed, 0);
+  const totalLessons = Object.values(progressData).reduce((sum, lang) => sum + lang.total, 0);
+  const overallProgress = Math.round((totalCompleted / totalLessons) * 100);
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
+    <ScrollView style={styles.container}>
+      <ThemedView style={styles.header}>
+        <ThemedText type="title" style={styles.title}>
+          Your Progress
+        </ThemedText>
+        <ThemedText style={styles.subtitle}>
+          Track your language learning journey
+        </ThemedText>
       </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
+
+      <ThemedView style={styles.statsContainer}>
+        <ThemedView style={styles.statCard}>
+          <ThemedText type="subtitle" style={styles.statNumber}>
+            {totalCompleted}
           </ThemedText>
+          <ThemedText style={styles.statLabel}>Lessons Completed</ThemedText>
+        </ThemedView>
+
+        <ThemedView style={styles.statCard}>
+          <ThemedText type="subtitle" style={styles.statNumber}>
+            {overallProgress}%
+          </ThemedText>
+          <ThemedText style={styles.statLabel}>Overall Progress</ThemedText>
+        </ThemedView>
+
+        <ThemedView style={styles.statCard}>
+          <ThemedText type="subtitle" style={styles.statNumber}>
+            🔥
+          </ThemedText>
+          <ThemedText style={styles.statLabel}>Current Streak</ThemedText>
+        </ThemedView>
+      </ThemedView>
+
+      <ThemedView style={styles.languagesContainer}>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          Language Progress
         </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
+
+        {Object.entries(progressData).map(([language, data]) => (
+          <ThemedView key={language} style={styles.languageCard}>
+            <ThemedView style={styles.languageHeader}>
+              <ThemedText type="subtitle" style={styles.languageName}>
+                {language.charAt(0).toUpperCase() + language.slice(1)}
+              </ThemedText>
+              <ThemedText style={styles.progressText}>
+                {data.completed}/{data.total} lessons
+              </ThemedText>
+            </ThemedView>
+
+            <ThemedView style={styles.progressBar}>
+              <ThemedView
+                style={[
+                  styles.progressFill,
+                  { width: `${(data.completed / data.total) * 100}%` }
+                ]}
+              />
+            </ThemedView>
+
+            {data.streak > 0 && (
+              <ThemedText style={styles.streakText}>
+                🔥 {data.streak} day streak
+              </ThemedText>
+            )}
+          </ThemedView>
+        ))}
+      </ThemedView>
+
+      <ThemedView style={styles.achievementsContainer}>
+        <ThemedText type="subtitle" style={styles.sectionTitle}>
+          Recent Achievements
         </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+
+        <ThemedView style={styles.achievementCard}>
+          <ThemedText type="subtitle" style={styles.achievementTitle}>
+            🏆 First Steps
+          </ThemedText>
+          <ThemedText style={styles.achievementDescription}>
+            Completed your first lesson!
+          </ThemedText>
+        </ThemedView>
+
+        <ThemedView style={styles.achievementCard}>
+          <ThemedText type="subtitle" style={styles.achievementTitle}>
+            📚 Language Explorer
+          </ThemedText>
+          <ThemedText style={styles.achievementDescription}>
+            Started learning your second language!
+          </ThemedText>
+        </ThemedView>
+      </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
   },
-  titleContainer: {
+  header: {
+    padding: 20,
+    backgroundColor: 'white',
+    alignItems: 'center',
+  },
+  title: {
+    marginBottom: 10,
+  },
+  subtitle: {
+    opacity: 0.7,
+  },
+  statsContainer: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'space-around',
+    padding: 20,
+  },
+  statCard: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    flex: 1,
+    margin: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  statLabel: {
+    fontSize: 12,
+    opacity: 0.7,
+    textAlign: 'center',
+  },
+  languagesContainer: {
+    padding: 20,
+  },
+  sectionTitle: {
+    marginBottom: 15,
+  },
+  languageCard: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  languageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  languageName: {
+    fontSize: 18,
+  },
+  progressText: {
+    opacity: 0.7,
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 4,
+    marginBottom: 10,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#007AFF',
+    borderRadius: 4,
+  },
+  streakText: {
+    fontSize: 14,
+    opacity: 0.7,
+  },
+  achievementsContainer: {
+    padding: 20,
+  },
+  achievementCard: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  achievementTitle: {
+    marginBottom: 5,
+  },
+  achievementDescription: {
+    opacity: 0.7,
   },
 });
