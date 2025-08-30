@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import AudioButton from '@/components/AudioButton';
 
 const lessonContent = {
   japanese: {
@@ -132,14 +133,35 @@ export default function LessonScreen() {
         {content.content.map((item: any, index: number) => (
           <ThemedView key={index} style={styles.contentItem}>
             {item.type === 'text' ? (
-              <ThemedText style={styles.textContent}>{item.text}</ThemedText>
+              <ThemedView style={styles.textWithAudio}>
+                <ThemedText style={styles.textContent}>{item.text}</ThemedText>
+                <AudioButton
+                  text={item.text}
+                  language={language as string}
+                  size={20}
+                />
+              </ThemedView>
             ) : (
               <ThemedView style={styles.vocabularyItem}>
-                <ThemedText type="subtitle" style={styles.word}>
-                  {item.word}
-                </ThemedText>
+                <ThemedView style={styles.wordWithAudio}>
+                  <ThemedText type="subtitle" style={styles.word}>
+                    {item.word}
+                  </ThemedText>
+                  <AudioButton
+                    text={item.word}
+                    language={language as string}
+                    size={22}
+                  />
+                </ThemedView>
                 {item.romaji && (
-                  <ThemedText style={styles.romaji}>{item.romaji}</ThemedText>
+                  <ThemedView style={styles.romajiWithAudio}>
+                    <ThemedText style={styles.romaji}>{item.romaji}</ThemedText>
+                    <AudioButton
+                      text={item.romaji}
+                      language={language as string}
+                      size={18}
+                    />
+                  </ThemedView>
                 )}
                 {item.pronunciation && (
                   <ThemedText style={styles.pronunciation}>
@@ -147,7 +169,14 @@ export default function LessonScreen() {
                   </ThemedText>
                 )}
                 {item.example && (
-                  <ThemedText style={styles.example}>Example: {item.example}</ThemedText>
+                  <ThemedView style={styles.exampleWithAudio}>
+                    <ThemedText style={styles.example}>Example: {item.example}</ThemedText>
+                    <AudioButton
+                      text={item.example}
+                      language={language as string}
+                      size={18}
+                    />
+                  </ThemedView>
                 )}
                 <ThemedText style={styles.meaning}>
                   {item.meaning}
@@ -197,31 +226,55 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
   },
+  textWithAudio: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
   textContent: {
     fontSize: 16,
     lineHeight: 24,
+    flex: 1,
   },
   vocabularyItem: {
     marginBottom: 15,
   },
+  wordWithAudio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   word: {
     fontSize: 20,
     marginBottom: 5,
+    flex: 1,
+  },
+  romajiWithAudio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   romaji: {
     fontSize: 14,
     opacity: 0.7,
     fontStyle: 'italic',
+    flex: 1,
   },
   pronunciation: {
     fontSize: 14,
     opacity: 0.7,
     marginTop: 5,
   },
+  exampleWithAudio: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   example: {
     fontSize: 14,
     opacity: 0.7,
     marginTop: 5,
+    flex: 1,
   },
   meaning: {
     fontSize: 16,
