@@ -37,6 +37,13 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6d0a2a75-34b3-4347-aba4-f6408b79c21c"
+      }
+    },
+    "owner": "newtongh"
   }
 }
