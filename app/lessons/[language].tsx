@@ -5,48 +5,28 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AudioButton from '@/components/AudioButton';
-
-const lessonData = {
-  japanese: {
-    flag: '🇯🇵',
-    name: 'Japanese',
-    lessons: [
-      { id: 1, title: 'Hiragana Basics', description: 'Learn the fundamental Japanese script' },
-      { id: 2, title: 'Katakana Basics', description: 'Master the second Japanese script' },
-      { id: 3, title: 'Basic Greetings', description: 'Essential phrases for daily conversation' },
-      { id: 4, title: 'Numbers 1-10', description: 'Count in Japanese' },
-      { id: 5, title: 'Family Members', description: 'Vocabulary for your family' },
-    ],
-  },
-  spanish: {
-    flag: '🇪🇸',
-    name: 'Spanish',
-    lessons: [
-      { id: 1, title: 'Basic Pronunciation', description: 'Master Spanish sounds' },
-      { id: 2, title: 'Greetings & Introductions', description: 'Meet and greet in Spanish' },
-      { id: 3, title: 'Numbers 1-20', description: 'Count in Spanish' },
-      { id: 4, title: 'Colors', description: 'Learn color vocabulary' },
-      { id: 5, title: 'Family & Relationships', description: 'Talk about your family' },
-    ],
-  },
-  arabic: {
-    flag: '🇸🇦',
-    name: 'Arabic',
-    lessons: [
-      { id: 1, title: 'Arabic Alphabet', description: 'Learn the Arabic script' },
-      { id: 2, title: 'Basic Greetings', description: 'Essential Arabic phrases' },
-      { id: 3, title: 'Numbers 1-10', description: 'Count in Arabic' },
-      { id: 4, title: 'Family Vocabulary', description: 'Words for family members' },
-      { id: 5, title: 'Food & Drink', description: 'Culinary vocabulary' },
-    ],
-  },
-};
+import { getLanguageData, DataService } from '@/services/dataService';
+import { useEffect, useState } from 'react';
 
 export default function LanguageLessonsScreen() {
   const { language } = useLocalSearchParams();
   const router = useRouter();
+  const [completedLessons, setCompletedLessons] = useState<number[]>([]);
 
-  const langData = lessonData[language as keyof typeof lessonData];
+  const langData = getLanguageData(language as string);
+
+  useEffect(() => {
+    loadProgress();
+  }, [language]);
+
+  const loadProgress = async () => {
+    try {
+      const progress = await DataService.getUserProgress(language as string);
+      setCompletedLessons(progress.completedLessons);
+    } catch (error) {
+      console.error('Error loading progress:', error);
+    }
+  };
 
   if (!langData) {
     return (
@@ -62,39 +42,98 @@ export default function LanguageLessonsScreen() {
     router.push(`/lessons/${language}/lesson/${lessonId}`);
   };
 
+  const continueLearning = () => {
+    // Find first incomplete lesson
+    const nextLesson = langData.lessons.find(
+      (l: { id: number }) => !completedLessons.includes(l.id)
+    );
+    if (nextLesson) {
+      router.push(`/lessons/${language}/lesson/${nextLesson.id}`);
+    }
+  };
+
+  const progressPercent = Math.round(
+    (completedLessons.length / langData.lessons.length) * 100
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+      >
         <ThemedView style={styles.header}>
           <ThemedText type="title" style={styles.title}>
             {langData.flag} {langData.name} Lessons
           </ThemedText>
           <ThemedText style={styles.subtitle}>
-            Progress from beginner to advanced
+            {completedLessons.length}/{langData.lessons.length} completed ·{' '}
+            {progressPercent}%
           </ThemedText>
+
+          {/* Progress Bar */}
+          <ThemedView style={styles.progressBarContainer}>
+            <ThemedView
+              style={[styles.progressBar, { width: `${progressPercent}%` }]}
+            />
+          </ThemedView>
+
+          {/* Continue Button */}
+          {completedLessons.length < langData.lessons.length && (
+            <TouchableOpacity
+              style={styles.continueButton}
+              onPress={continueLearning}
+            >
+              <ThemedText type="subtitle" style={styles.continueButtonText}>
+                {completedLessons.length === 0
+                  ? 'Start Learning'
+                  : 'Continue Learning'}
+              </ThemedText>
+            </TouchableOpacity>
+          )}
         </ThemedView>
 
-        {langData.lessons.map((lesson) => (
-          <TouchableOpacity
-            key={lesson.id}
-            style={styles.lessonCard}
-            onPress={() => startLesson(lesson.id)}
-          >
-            <ThemedView style={styles.lessonTitleWithAudio}>
-              <ThemedText type="subtitle" style={styles.lessonTitle}>
-                Lesson {lesson.id}: {lesson.title}
+        {langData.lessons.map((lesson: { id: number; title: string; description: string; difficulty: string; estimatedTime: number }, index: number) => {
+          const isCompleted = completedLessons.includes(lesson.id);
+          const isLocked =
+            index > 0 && !completedLessons.includes(langData.lessons[index - 1].id);
+
+          return (
+            <TouchableOpacity
+              key={lesson.id}
+              style={[
+                styles.lessonCard,
+                isCompleted && styles.completedCard,
+                isLocked && styles.lockedCard,
+              ]}
+              onPress={() => !isLocked && startLesson(lesson.id)}
+              disabled={isLocked}
+            >
+              <ThemedView style={styles.lessonHeader}>
+                <ThemedView style={styles.lessonTitleRow}>
+                  <ThemedText type="subtitle" style={styles.lessonTitle}>
+                    {isCompleted && '✅ '}
+                    {isLocked && '🔒 '}
+                    Lesson {lesson.id}: {lesson.title}
+                  </ThemedText>
+                  {!isLocked && (
+                    <AudioButton
+                      text={lesson.title}
+                      language={language as string}
+                      size={20}
+                    />
+                  )}
+                </ThemedView>
+                <ThemedText style={styles.lessonMeta}>
+                  {lesson.difficulty} · {lesson.estimatedTime} min
+                </ThemedText>
+              </ThemedView>
+              <ThemedText style={styles.lessonDescription}>
+                {lesson.description}
               </ThemedText>
-              <AudioButton
-                text={lesson.title}
-                language={language as string}
-                size={20}
-              />
-            </ThemedView>
-            <ThemedText style={styles.lessonDescription}>
-              {lesson.description}
-            </ThemedText>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );
@@ -126,6 +165,30 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     opacity: 0.7,
+    marginBottom: 15,
+  },
+  progressBarContainer: {
+    width: '100%',
+    height: 8,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 4,
+    marginBottom: 15,
+  },
+  progressBar: {
+    height: '100%',
+    backgroundColor: '#007AFF',
+    borderRadius: 4,
+  },
+  continueButton: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  continueButtonText: {
+    color: 'white',
+    fontSize: 16,
   },
   lessonCard: {
     backgroundColor: 'white',
@@ -138,15 +201,32 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  lessonTitleWithAudio: {
+  completedCard: {
+    backgroundColor: '#f0f8ff',
+    borderLeftWidth: 4,
+    borderLeftColor: '#28a745',
+  },
+  lockedCard: {
+    opacity: 0.6,
+    backgroundColor: '#f9f9f9',
+  },
+  lessonHeader: {
+    marginBottom: 8,
+  },
+  lessonTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
   },
   lessonTitle: {
-    marginBottom: 8,
+    fontSize: 18,
     flex: 1,
+  },
+  lessonMeta: {
+    fontSize: 12,
+    opacity: 0.5,
+    marginTop: 4,
+    textTransform: 'capitalize',
   },
   lessonDescription: {
     opacity: 0.7,
