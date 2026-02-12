@@ -1,23 +1,31 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useNavigation, useFocusEffect } from 'expo-router';
 import { StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AudioButton from '@/components/AudioButton';
 import { getLanguageData, DataService } from '@/services/dataService';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export default function LanguageLessonsScreen() {
   const { language } = useLocalSearchParams();
   const router = useRouter();
+  const navigation = useNavigation();
   const [completedLessons, setCompletedLessons] = useState<number[]>([]);
-
   const langData = getLanguageData(language as string);
 
   useEffect(() => {
     loadProgress();
   }, [language]);
+
+  // Set screen title dynamically
+  useFocusEffect(
+    useCallback(() => {
+      navigation.setOptions({
+        title: langData ? `${langData.name} Lessons` : 'Lessons',
+      });
+    }, [navigation, langData])
+  );
 
   const loadProgress = async () => {
     try {
@@ -58,9 +66,7 @@ export default function LanguageLessonsScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}
       >
         <ThemedView style={styles.header}>
           <ThemedText type="title" style={styles.title}>
@@ -70,58 +76,35 @@ export default function LanguageLessonsScreen() {
             {completedLessons.length}/{langData.lessons.length} completed ·{' '}
             {progressPercent}%
           </ThemedText>
-
           {/* Progress Bar */}
           <ThemedView style={styles.progressBarContainer}>
-            <ThemedView
-              style={[styles.progressBar, { width: `${progressPercent}%` }]}
-            />
+            <ThemedView style={[styles.progressBar, { width: `${progressPercent}%` }]} />
           </ThemedView>
-
           {/* Continue Button */}
           {completedLessons.length < langData.lessons.length && (
-            <TouchableOpacity
-              style={styles.continueButton}
-              onPress={continueLearning}
-            >
+            <TouchableOpacity style={styles.continueButton} onPress={continueLearning}>
               <ThemedText type="subtitle" style={styles.continueButtonText}>
-                {completedLessons.length === 0
-                  ? 'Start Learning'
-                  : 'Continue Learning'}
+                {completedLessons.length === 0 ? 'Start Learning' : 'Continue Learning'}
               </ThemedText>
             </TouchableOpacity>
           )}
         </ThemedView>
-
         {langData.lessons.map((lesson: { id: number; title: string; description: string; difficulty: string; estimatedTime: number }, index: number) => {
           const isCompleted = completedLessons.includes(lesson.id);
-          const isLocked =
-            index > 0 && !completedLessons.includes(langData.lessons[index - 1].id);
-
+          const isLocked = index > 0 && !completedLessons.includes(langData.lessons[index - 1].id);
           return (
-            <TouchableOpacity
-              key={lesson.id}
-              style={[
-                styles.lessonCard,
-                isCompleted && styles.completedCard,
-                isLocked && styles.lockedCard,
-              ]}
-              onPress={() => !isLocked && startLesson(lesson.id)}
-              disabled={isLocked}
-            >
+            <TouchableOpacity key={lesson.id} style={[
+              styles.lessonCard,
+              isCompleted && styles.completedCard,
+              isLocked && styles.lockedCard,
+            ]} onPress={() => !isLocked && startLesson(lesson.id)} disabled={isLocked}>
               <ThemedView style={styles.lessonHeader}>
                 <ThemedView style={styles.lessonTitleRow}>
                   <ThemedText type="subtitle" style={styles.lessonTitle}>
-                    {isCompleted && '✅ '}
-                    {isLocked && '🔒 '}
-                    Lesson {lesson.id}: {lesson.title}
+                    {isCompleted && '✅ '} {isLocked && '🔒 '} Lesson {lesson.id}: {lesson.title}
                   </ThemedText>
                   {!isLocked && (
-                    <AudioButton
-                      text={lesson.title}
-                      language={language as string}
-                      size={20}
-                    />
+                    <AudioButton text={lesson.title} language={language as string} size={20} />
                   )}
                 </ThemedView>
                 <ThemedText style={styles.lessonMeta}>
@@ -132,8 +115,8 @@ export default function LanguageLessonsScreen() {
                 {lesson.description}
               </ThemedText>
             </TouchableOpacity>
-          );
-        })}
+          ); }
+        )}
       </ScrollView>
     </SafeAreaView>
   );
