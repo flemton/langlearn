@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { IconSymbol } from './ui/IconSymbol';
 import { AudioService } from '../services/audioService';
+import { DataService } from '../services/dataService';
 
 interface AudioButtonProps {
   audioUri?: string;
@@ -10,29 +11,53 @@ interface AudioButtonProps {
   size?: number;
 }
 
-export default function AudioButton({ audioUri, text, language, size = 24 }: AudioButtonProps) {
+export default function AudioButton({
+  audioUri,
+  text,
+  language,
+  size = 24,
+}: AudioButtonProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
 
   // Don't show audio button for English or unsupported languages
-  const isAudioAvailable = language && language !== 'english' && ['japanese', 'spanish', 'arabic'].includes(language);
+  const isAudioAvailable =
+    language &&
+    language !== 'english' &&
+    ['japanese', 'spanish', 'arabic'].includes(language);
 
   useEffect(() => {
+    loadSettings();
+
+    // Cleanup TTS when component unmounts
     return () => {
-      // Cleanup TTS when component unmounts
       AudioService.stop();
     };
   }, []);
 
+  const loadSettings = async () => {
+    try {
+      const settings = await DataService.getSettings();
+      setAudioEnabled(settings.audioEnabled);
+    } catch (error) {
+      console.error('Error loading audio settings:', error);
+    }
+  };
+
   const playAudio = async () => {
+    if (!audioEnabled) {
+      Alert.alert('Audio Disabled', 'Enable audio in Settings to hear pronunciations.');
+      return;
+    }
+
+    if (!text) return;
+
     try {
       setIsLoading(true);
       setIsPlaying(true);
 
-      // Use TTS to speak the text
-      if (text) {
-        await AudioService.speak(text, language);
-      }
+      await AudioService.speak(text, language);
 
       setIsPlaying(false);
       setIsLoading(false);
@@ -40,6 +65,13 @@ export default function AudioButton({ audioUri, text, language, size = 24 }: Aud
       console.error('Error playing audio:', error);
       setIsPlaying(false);
       setIsLoading(false);
+
+      // Show user-friendly error
+      Alert.alert(
+        'Audio Error',
+        'Could not play pronunciation. Please check your internet connection.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -64,14 +96,27 @@ export default function AudioButton({ audioUri, text, language, size = 24 }: Aud
 
   return (
     <TouchableOpacity
-      style={[styles.button, isPlaying && styles.playing]}
+      style={[
+        styles.button,
+        isPlaying && styles.playing,
+        !audioEnabled && styles.disabled,
+      ]}
       onPress={handlePress}
-      disabled={isLoading}
+      disabled={isLoading || !audioEnabled}
+      activeOpacity={0.7}
     >
       <IconSymbol
-        name={isLoading ? "hourglass" : isPlaying ? "pause.fill" : "speaker.wave.2.fill"}
+        name={
+          isLoading
+            ? 'hourglass'
+            : isPlaying
+            ? 'pause.fill'
+            : audioEnabled
+            ? 'speaker.wave.2.fill'
+            : 'speaker.slash.fill'
+        }
         size={size}
-        color={isPlaying ? "#FF6B35" : "#007AFF"}
+        color={isPlaying ? '#FF6B35' : audioEnabled ? '#007AFF' : '#999'}
       />
     </TouchableOpacity>
   );
@@ -88,5 +133,8 @@ const styles = StyleSheet.create({
   },
   playing: {
     backgroundColor: 'rgba(255, 107, 53, 0.1)',
+  },
+  disabled: {
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
 });
