@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useNavigation } from 'expo-router';
 import {
   StyleSheet,
   TouchableOpacity,
@@ -12,11 +12,12 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AudioButton from '@/components/AudioButton';
 import { DataService, getLesson, getLanguageData } from '@/services/dataService';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 
 export default function LessonScreen() {
   const { language, lessonId } = useLocalSearchParams();
   const router = useRouter();
+  const navigation = useNavigation();
   const [isCompleted, setIsCompleted] = useState(false);
   const [settings, setSettings] = useState({ hapticsEnabled: true });
 
@@ -26,6 +27,15 @@ export default function LessonScreen() {
   useEffect(() => {
     loadData();
   }, [language, lessonId]);
+
+  // Set dynamic screen title
+  useLayoutEffect(() => {
+    if (lesson && langData) {
+      navigation.setOptions({
+        title: `${langData.name} Lesson ${lesson.id}: ${lesson.title}`,
+      });
+    }
+  }, [navigation, lesson, langData]);
 
   const loadData = async () => {
     try {
